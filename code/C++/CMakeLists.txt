@@ -14,7 +14,7 @@ if(UNIX)
 else()
     include_directories(${PROJECT_NAME} PUBLIC $ENV{OPENCV_DIR}\\..\\..\\include)
     target_link_directories(${PROJECT_NAME} PUBLIC $ENV{OPENCV_DIR}\\lib)
-    target_link_libraries(${PROJECT_NAME} opencv_core470 opencv_highgui470 opencv_imgproc470 opencv_imgcodecs470 opencv_videoio470)
+    target_link_libraries(${PROJECT_NAME} opencv_core$ENV{OpenCV_version} opencv_highgui$ENV{OpenCV_version} opencv_imgproc$ENV{OpenCV_version} opencv_imgcodecs$ENV{OpenCV_version} opencv_videoio$ENV{OpenCV_version})
 endif()
 
 
