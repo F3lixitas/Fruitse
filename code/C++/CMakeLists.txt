@@ -4,7 +4,7 @@ project(Fruitse)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(${PROJECT_NAME} source/main.cpp source/LBP.hpp source/LBP.cpp)
+add_executable(${PROJECT_NAME} source/main.cpp)
 
 if(UNIX)
     find_package(OpenCV REQUIRED)
@@ -12,8 +12,9 @@ if(UNIX)
     target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/source)
     target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 else()
-    include_directories(${PROJECT_NAME} PUBLIC C:/ton/chemin/ici)
-    target_link_libraries(${PROJECT_NAME} C:/ton/chemin/ici)
+    include_directories(${PROJECT_NAME} PUBLIC $ENV{OPENCV_DIR}\\..\\..\\include)
+    target_link_directories(${PROJECT_NAME} PUBLIC $ENV{OPENCV_DIR}\\lib)
+    target_link_libraries(${PROJECT_NAME} opencv_core470 opencv_highgui470 opencv_imgproc470 opencv_imgcodecs470 opencv_videoio470)
 endif()
 
 
