@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
                 cv::Mat image = cv::imread(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s)).string());
                 cv::Mat dst;
                 cv::cvtColor(image, dst, cv::COLOR_BGR2GRAY);
-                cv::Mat lbp = LBPImage<unsigned char>(dst);
+                cv::Mat lbp = LBPImage(dst);
                 cv::namedWindow("Image", 1);
                 cv::imshow("Image", lbp);
                 cv::waitKey(0);
