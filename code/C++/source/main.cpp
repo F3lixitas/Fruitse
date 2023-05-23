@@ -1,4 +1,5 @@
 #include "LBP.hpp"
+#include "HOG.hpp"
 #include <filesystem>
 #include <iostream>
 
@@ -17,8 +18,14 @@ int main(int argc, char* argv[]) {
                 cv::Mat dst;
                 cv::cvtColor(image, dst, cv::COLOR_BGR2GRAY);
                 cv::Mat lbp = LBPImage(dst);
+                struct::HOGFeatures hog = HOG(image);
+                cv::Mat HogImg = image.clone();
+                drawHOGPoints(HogImg,hog);
                 cv::namedWindow("Image", 1);
                 cv::imshow("Image", lbp);
+                cv::waitKey(0);
+                cv::namedWindow("Image HOG", 1);
+                cv::imshow("Image HOG", HogImg);
                 cv::waitKey(0);
             } else {
                 std::cerr << "The path <" << path.string() << "> does not exist !\n";
