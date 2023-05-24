@@ -17,11 +17,11 @@ cv::Mat pretraitement(cv::Mat img) {
 
     // Détecter les bandes blanches qui entourent l'image
     int thresh = 200;
-        // Vérifier si l'image a des bandes blanches horizontales
+    // Vérifier si l'image a des bandes blanches horizontales
     bool horizontal_bands = true;
     int top_horizontal_band = 0;
-    int bottom_horizontal_band = 0;
-        // On cherche une bordure par en haut
+    int bottom_horizontal_band = 255;
+    // On cherche une bordure par en haut
     for (int i = 0; (i < gray.rows) & horizontal_bands; i++) {
         for (int j = 0; (j < gray.cols) & horizontal_bands; j++) {
             cv::Vec3b pixel = img.at<cv::Vec3b>(i, j);
@@ -31,7 +31,7 @@ cv::Mat pretraitement(cv::Mat img) {
         }
         top_horizontal_band = i;
     }
-        // S'il y a une bordure en haut, on cherche la bordure en bas
+    // S'il y a une bordure en haut, on cherche la bordure en bas
     if (top_horizontal_band != 0){
         horizontal_bands = true;
         for (int i = gray.rows-1; (i >= 0) & horizontal_bands; i--) {
@@ -47,7 +47,7 @@ cv::Mat pretraitement(cv::Mat img) {
     // Vérifier si l'image a des bandes blanches verticales
     bool vertical_bands = true;
     int left_vertical_band = 0;
-    int right_vertical_band = 0;
+    int right_vertical_band = 207;
     // On cherche une bordure par la gauche
     for (int i = 0; (i < gray.cols) & vertical_bands; i++) {
         for (int j = 0; (j < gray.rows) & vertical_bands; j++) {
@@ -72,7 +72,7 @@ cv::Mat pretraitement(cv::Mat img) {
         }
     }
 
-        //Création de "lignes" grâce aux deux étapes précédentes
+    //Création de "lignes" grâce aux deux étapes précédentes
     std::vector<cv::Vec2f> lignes(8);
     if ((top_horizontal_band != 0) & (left_vertical_band != 0)) {
         lignes[0][0] = 0;//208*256
@@ -134,6 +134,8 @@ cv::Mat pretraitement(cv::Mat img) {
 
     // Appliquer un filtre de gradient pour détecter les contours des fruits
     cv::Mat gradient;
+    gray = gray.colRange(left_vertical_band,right_vertical_band);
+    gray = gray.rowRange(top_horizontal_band,bottom_horizontal_band);
     cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
     morphologyEx(gray, gradient, cv::MORPH_GRADIENT, kernel);
 
@@ -151,6 +153,12 @@ cv::Mat pretraitement(cv::Mat img) {
 
     // Créer un masque pour extraire le fond de l'image de fruits
     cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
+    for (int i = 0; i < contours.size(); i++) {
+        for (int j = 0; j < contours[i].size(); j++) {
+            contours[i][j].x = contours[i][j].x + left_vertical_band;
+            contours[i][j].y = contours[i][j].y + top_horizontal_band;
+        }
+    }
     drawContours(mask, contours, -1, cv::Scalar(255), cv::FILLED);
 
     // Appliquer le masque pour extraire le fond de l'image de fruits
@@ -158,6 +166,7 @@ cv::Mat pretraitement(cv::Mat img) {
     bitwise_and(img, img, background, mask);
 
     // Enregistrer le fond de l'image de fruits
-    // imwrite("C:\\Users\\Melissa\\Documents\\FISE2\\S8\\chef_d_oeuvre\\couleur_CO_git\\code\\C++\\source\\test.jpg", background);
+    imwrite("C:\\Users\\Melissa\\Documents\\FISE2\\S8\\chef_d_oeuvre\\couleur_CO_git\\code\\C++\\source\\test.jpg", background);
+
     return background;
 }
