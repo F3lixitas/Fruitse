@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
         for (int i = 1; i < argc; i++) {
             std::filesystem::path path = std::filesystem::absolute(PROJECT_ROOT_PATH.concat(argv[i]));
 
-            cv::Mat image = cv::imread(path);
+            cv::Mat image = cv::imread(path.string());
             cv::Mat mask = pretraitement(image);
             cv::cvtColor(image, image, cv::COLOR_RGB2GRAY);
             bitwise_and(image, image, image, mask);
