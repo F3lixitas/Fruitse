@@ -1,4 +1,4 @@
-#include "opencv2/opencv.hpp"
+#include "pretraitement.hpp"
 #include <vector>
 
 using namespace std;
@@ -73,7 +73,7 @@ cv::Mat pretraitement(cv::Mat img) {
     }
 
     //Création de "lignes" grâce aux deux étapes précédentes
-    std::vector<cv::Vec2f> lignes(8);
+    /*std::vector<cv::Vec2f> lignes(8);
     if ((top_horizontal_band != 0) & (left_vertical_band != 0)) {
         lignes[0][0] = 0;//208*256
         lignes[0][1] = top_horizontal_band;
@@ -112,10 +112,10 @@ cv::Mat pretraitement(cv::Mat img) {
         lignes[2][1] = 0;
         lignes[3][0] = right_vertical_band;
         lignes[3][1] = 256;
-    }
+    }*/
 
     // Dessiner les lignes détectées sur l'image d'origine
-    cv::Mat imageLignes;
+    /*cv::Mat imageLignes;
     cv::cvtColor(gray, imageLignes, cv::COLOR_GRAY2BGR);
     for (size_t i = 0; i < lignes.size(); i+=2) {
         double x1 = lignes[i][0];
@@ -125,12 +125,12 @@ cv::Mat pretraitement(cv::Mat img) {
         cv::Point pt1(x1, y1);
         cv::Point pt2(x2, y2);
         cv::line(imageLignes, pt1, pt2, cv::Scalar(0, 0, 255), 2);
-    }
+    }*/
 
     // Afficher l'image avec les lignes détectées
-    cv::namedWindow("Lignes détectées",1);
+    /*cv::namedWindow("Lignes détectées",1);
     cv::imshow("Lignes détectées", imageLignes);
-    cv::waitKey(0);
+    cv::waitKey(0);*/
 
     // Appliquer un filtre de gradient pour détecter les contours des fruits
     cv::Mat gradient;
@@ -162,11 +162,11 @@ cv::Mat pretraitement(cv::Mat img) {
     drawContours(mask, contours, -1, cv::Scalar(255), cv::FILLED);
 
     // Appliquer le masque pour extraire le fond de l'image de fruits
-    cv::Mat background;
-    bitwise_and(img, img, background, mask);
+    //cv::Mat background;
+    //bitwise_and(img, img, background, mask);
 
     // Enregistrer le fond de l'image de fruits
-    imwrite("C:\\Users\\Melissa\\Documents\\FISE2\\S8\\chef_d_oeuvre\\couleur_CO_git\\code\\C++\\source\\test.jpg", background);
+    //imwrite("C:\\Users\\Melissa\\Documents\\FISE2\\S8\\chef_d_oeuvre\\couleur_CO_git\\code\\C++\\source\\test.jpg", background);
 
-    return background;
+    return mask;
 }

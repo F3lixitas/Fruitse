@@ -1,5 +1,5 @@
 #include "LBP.hpp"
-#include "HOG.hpp"
+#include "pretraitement.hpp"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -47,6 +47,42 @@ cv::Mat displayHistogram(const cv::Mat& hist) {
  * Charge une image ou une série d'images et écrit ses caractéristiques dans un fichier csv.
  */
 int main(int argc, char* argv[]) {
+    if(argc >= 2) {
+        cv::HOGDescriptor hog;
+        for (int i = 1; i < argc; i++) {
+            std::filesystem::path path = std::filesystem::absolute(PROJECT_ROOT_PATH.concat(argv[i]));
+
+            cv::Mat image = cv::imread(path);
+            cv::Mat mask = pretraitement(image);
+            cv::cvtColor(image, image, cv::COLOR_RGB2GRAY);
+            bitwise_and(image, image, image, mask);
+            cv::Mat lbp_pe = LBPImage(image);
+            cv::Mat hist_pe = histogram(lbp_pe);
+
+            hog.winSize = image.size();
+            std::vector<float> hog_pe;
+            hog.compute( image, hog_pe, cv::Size( 4, 4 ), cv::Size( 0, 0 ) );
+
+            cv::resize(image, image, cv::Size(), 0.5, 0.5);
+            cv::Mat lbp_de = LBPImage(image);
+            cv::Mat hist_de = histogram(lbp_de);
+
+            hog.winSize = image.size();
+            std::vector<float> hog_de;
+            hog.compute( image, hog_de, cv::Size( 4, 4 ), cv::Size( 0, 0 ) );
+
+            cv::resize(image, image, cv::Size(), 0.5, 0.5);
+            cv::Mat lbp_qe = LBPImage(image);
+            cv::Mat hist_qe = histogram(lbp_qe);
+
+            std::ofstream outputFile(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(std::string("/datasets/test")+std::to_string(i)+".csv")), std::fstream::app);
+            outputFile << 9 << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
+                       format(hist_de.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_qe.t(), cv::Formatter::FMT_CSV) << ", " <<
+                       format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
+            outputFile.close();
+        }
+        return 0;
+    }
     std::vector<DataPoint> trainDataFiles;
     for(int i = 0; i < NB_CLASSES; i++) {
         std::string s = "/images/base_apprentissage/";
@@ -58,8 +94,12 @@ int main(int argc, char* argv[]) {
                 trainDataFiles.push_back({imagePath.path().string(), i});
             }
         } else {
-            std::cout << "Learning folder for " << classes[i] << " does not exist!\n";
+            std::cerr << "Learning folder for " << classes[i] << " does not exist!\n";
         }
+    }
+    std::filesystem::path path = std::filesystem::absolute(PROJECT_ROOT_PATH.concat("/datasets/sortie.csv"));
+    if(std::filesystem::exists(path)) {
+        std::filesystem::remove(path);
     }
 
     std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
@@ -67,18 +107,20 @@ int main(int argc, char* argv[]) {
     auto rng = std::default_random_engine {};
     rng.seed(dtn.count());
     std::shuffle(trainDataFiles.begin(), trainDataFiles.end(), rng);
+    cv::HOGDescriptor hog;
 
     for(DataPoint& dp : trainDataFiles) {
         // extraction des caractéristiques
-        cv::Mat image = cv::imread(dp.path, cv::IMREAD_GRAYSCALE);
+        cv::Mat image = cv::imread(dp.path);
+        cv::Mat mask = pretraitement(image);
+        cv::cvtColor(image, image, cv::COLOR_RGB2GRAY);
+        bitwise_and(image, image, image, mask);
         cv::Mat lbp_pe = LBPImage(image);
         cv::Mat hist_pe = histogram(lbp_pe);
 
-        cv::HOGDescriptor hog;
         hog.winSize = image.size();
         std::vector<float> hog_pe;
         hog.compute( image, hog_pe, cv::Size( 4, 4 ), cv::Size( 0, 0 ) );
-        std::cout << "size pe = " << hog_pe.size() << std::endl;
 
         cv::resize(image, image, cv::Size(), 0.5, 0.5);
         cv::Mat lbp_de = LBPImage(image);
@@ -87,34 +129,28 @@ int main(int argc, char* argv[]) {
         hog.winSize = image.size();
         std::vector<float> hog_de;
         hog.compute( image, hog_de, cv::Size( 4, 4 ), cv::Size( 0, 0 ) );
-        std::cout << "size de = " << hog_de.size() << std::endl;
 
         cv::resize(image, image, cv::Size(), 0.5, 0.5);
         cv::Mat lbp_qe = LBPImage(image);
         cv::Mat hist_qe = histogram(lbp_qe);
 
-        std::ofstream outputFile("sortie.csv", std::fstream::app);
+        std::ofstream outputFile(path, std::fstream::app);
         outputFile << dp.imageClass << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
             format(hist_de.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_qe.t(), cv::Formatter::FMT_CSV) << ", " <<
-            format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << ", " << std::endl;
+            format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
         outputFile.close();
     }
 /*
-    if(argc >=2){
-        for(int i = 1; i < trainDataFiles.size(); i++) {
-            std::string s = trainDataFiles[i].path;
+    if(argc >= 2){
+        for(int i = 1; i < argc; i++) {
+            std::string s = argv[i];
             std::filesystem::path path = std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s));
             if(std::filesystem::exists(path)) {
-                cv::Mat image = cv::imread(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s)).string());
+                cv::Mat image = pretraitement(cv::imread(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s)).string()));
+                cv::namedWindow("Image", 1);
+                cv::imshow("Image", image);
                 cv::Mat dst;
                 cv::cvtColor(image, dst, cv::COLOR_BGR2GRAY);
-                cv::Mat lbp = LBPImage(dst);
-
-                struct::HOGFeatures hog = HOG(image);
-                cv::Mat HogImg = image.clone();
-                drawHOGPoints(HogImg,hog);
-                cv::namedWindow("Image", 1);
-                cv::imshow("Image", lbp);
 
                 cv::Mat lbp_pe = LBPImage(dst);
                 cv::resize(dst, dst, cv::Size(), 0.5, 0.5);
@@ -146,9 +182,6 @@ int main(int argc, char* argv[]) {
 
 
 
-                cv::waitKey(0);
-                cv::namedWindow("Image HOG", 1);
-                cv::imshow("Image HOG", HogImg);
                 cv::waitKey(0);
             } else {
                 std::cerr << "The path <" << path.string() << "> does not exist !\n";
