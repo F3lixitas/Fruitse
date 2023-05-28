@@ -27,7 +27,7 @@ cv::Mat histo16(cv::Mat img) {
     // Calculer l'histogramme de la teinte
     cv::Mat histogram;
     cv::calcHist(&hsvChannels[0], 1, 0, cv::Mat(), histogram, 1, &numClasses, &histRange);
-
+/*
     // Créer l'affichage de l'histogramme
     int histWidth = 512;
     int histHeight = 400;
@@ -46,7 +46,7 @@ cv::Mat histo16(cv::Mat img) {
     // Afficher l'histogramme
     cv::namedWindow("Histogramme", cv::WINDOW_AUTOSIZE);
     cv::imshow("Histogramme", histImage);
-    cv::waitKey(0);
+    cv::waitKey(0);*/
 
-    return histImage;
+    return histogram;
 }

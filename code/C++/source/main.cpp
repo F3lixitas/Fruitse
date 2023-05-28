@@ -1,5 +1,6 @@
 #include "LBP.hpp"
 #include "pretraitement.hpp"
+#include "histo16.hpp"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -54,8 +55,13 @@ int main(int argc, char* argv[]) {
 
             cv::Mat image = cv::imread(path.string());
             cv::Mat mask = pretraitement(image);
+
+            cv::Mat hueHist = histo16(image);
+
             cv::cvtColor(image, image, cv::COLOR_RGB2GRAY);
             bitwise_and(image, image, image, mask);
+
+
             cv::Mat lbp_pe = LBPImage(image);
             cv::Mat hist_pe = histogram(lbp_pe);
 
@@ -75,8 +81,12 @@ int main(int argc, char* argv[]) {
             cv::Mat lbp_qe = LBPImage(image);
             cv::Mat hist_qe = histogram(lbp_qe);
 
-            std::ofstream outputFile(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(std::string("/datasets/test")+std::to_string(i)+".csv")), std::fstream::app);
-            outputFile << 9 << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
+            std::filesystem::path p = std::filesystem::absolute(PROJECT_ROOT_PATH.concat(std::string("/datasets/test")+std::to_string(i)+".csv"));
+            if(std::filesystem::exists(p)) {
+                std::filesystem::remove(p);
+            }
+            std::ofstream outputFile(p, std::fstream::app);
+            outputFile << 9 << ", " << format(hueHist.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
                        format(hist_de.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_qe.t(), cv::Formatter::FMT_CSV) << ", " <<
                        format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
             outputFile.close();
@@ -113,6 +123,7 @@ int main(int argc, char* argv[]) {
         // extraction des caractéristiques
         cv::Mat image = cv::imread(dp.path);
         cv::Mat mask = pretraitement(image);
+        cv::Mat hueHist = histo16(image);
         cv::cvtColor(image, image, cv::COLOR_RGB2GRAY);
         bitwise_and(image, image, image, mask);
         cv::Mat lbp_pe = LBPImage(image);
@@ -135,7 +146,7 @@ int main(int argc, char* argv[]) {
         cv::Mat hist_qe = histogram(lbp_qe);
 
         std::ofstream outputFile(path, std::fstream::app);
-        outputFile << dp.imageClass << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
+        outputFile << dp.imageClass << ", " << format(hueHist.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
             format(hist_de.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_qe.t(), cv::Formatter::FMT_CSV) << ", " <<
             format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
         outputFile.close();

@@ -4,7 +4,7 @@ project(Fruitse)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(${PROJECT_NAME} source/main.cpp source/LBP.hpp source/LBP.cpp source/HOG.hpp source/HOG.cpp source/pretraitement.hpp source/pretraitement.cpp)
+add_executable(${PROJECT_NAME} source/main.cpp source/LBP.hpp source/LBP.cpp source/HOG.hpp source/HOG.cpp source/pretraitement.hpp source/pretraitement.cpp source/histo16.hpp source/histo16.cpp)
 
 if(UNIX)
     find_package(OpenCV REQUIRED)
