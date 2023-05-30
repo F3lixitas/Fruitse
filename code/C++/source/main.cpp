@@ -29,23 +29,8 @@ cv::Mat histogram(const cv::Mat& image) {
     return hist;
 }
 
-cv::Mat displayHistogram(const cv::Mat& hist) {
-    int hist_w = 512, hist_h = 400;
-    int bin_w = cvRound( (double) hist_w/256 );
-    cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar( 0) );
-
-    normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat() );
-    for( int i = 1; i < 256; i++ )
-    {
-        line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist.at<float>(i-1)) ),
-              cv::Point( bin_w*(i), hist_h - cvRound(hist.at<float>(i)) ),
-              cv::Scalar( 255), 2, 8, 0  );
-    }
-    return histImage;
-}
-
 /*
- * Charge une image ou une série d'images et écrit ses caractéristiques dans un fichier csv.
+ * Charge une image ou ula base d'apprentissage et écrit ses caractéristiques dans un fichier csv.
  */
 int main(int argc, char* argv[]) {
     if(argc >= 2) {
@@ -86,7 +71,7 @@ int main(int argc, char* argv[]) {
                 std::filesystem::remove(p);
             }
             std::ofstream outputFile(p, std::fstream::app);
-            outputFile << 9 << ", " << format(hueHist.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
+            outputFile << format(hueHist.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_pe.t(), cv::Formatter::FMT_CSV) << ", " <<
                        format(hist_de.t(), cv::Formatter::FMT_CSV) << ", " << format(hist_qe.t(), cv::Formatter::FMT_CSV) << ", " <<
                        format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
             outputFile.close();
@@ -151,53 +136,5 @@ int main(int argc, char* argv[]) {
             format(hog_pe, cv::Formatter::FMT_CSV) << ", " << format(hog_de, cv::Formatter::FMT_CSV) << std::endl;
         outputFile.close();
     }
-/*
-    if(argc >= 2){
-        for(int i = 1; i < argc; i++) {
-            std::string s = argv[i];
-            std::filesystem::path path = std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s));
-            if(std::filesystem::exists(path)) {
-                cv::Mat image = pretraitement(cv::imread(std::filesystem::absolute(PROJECT_ROOT_PATH.concat(s)).string()));
-                cv::namedWindow("Image", 1);
-                cv::imshow("Image", image);
-                cv::Mat dst;
-                cv::cvtColor(image, dst, cv::COLOR_BGR2GRAY);
-
-                cv::Mat lbp_pe = LBPImage(dst);
-                cv::resize(dst, dst, cv::Size(), 0.5, 0.5);
-                cv::Mat lbp_de = LBPImage(dst);
-                cv::resize(dst, dst, cv::Size(), 0.5, 0.5);
-                cv::Mat lbp_qe = LBPImage(dst);
-                cv::namedWindow("Pleine echelle", 1);
-                cv::imshow("Pleine echelle", lbp_pe);
-                cv::namedWindow("Demi echelle", 1);
-                cv::imshow("Demi echelle", lbp_de);
-                cv::namedWindow("Quart d'echelle", 1);
-                cv::imshow("Quart d'echelle", lbp_qe);
-
-                // histogramme
-                cv::Mat hist_pe = histogram(lbp_pe);
-                cv::Mat histImage_pe = displayHistogram(hist_pe);
-                cv::namedWindow("Histogramme pleine echelle", 1);
-                imshow("Histogramme pleine echelle", histImage_pe );
-
-                cv::Mat hist_de = histogram(lbp_de);
-                cv::Mat histImage_de = displayHistogram(hist_de);
-                cv::namedWindow("Histogramme demi echelle", 1);
-                imshow("Histogramme demi echelle", histImage_de );
-
-                cv::Mat hist_qe = histogram(lbp_qe);
-                cv::Mat histImage_qe = displayHistogram(hist_qe);
-                cv::namedWindow("Histogramme quart d'echelle", 1);
-                imshow("Histogramme quart d'echelle", histImage_qe );
-
-
-
-                cv::waitKey(0);
-            } else {
-                std::cerr << "The path <" << path.string() << "> does not exist !\n";
-            }
-        }
-    }*/
     return 0;
 }
